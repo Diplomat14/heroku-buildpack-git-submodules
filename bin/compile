@@ -17,8 +17,17 @@ if [[ -z $GIT_SSH_KEY ]]; then
     exit 1
 fi
 
+echo "-----> Current directory is:"
+ls
+
+echo "-----> Fetching submodules from $GIT_REPO_URL"
+git submodule update --init --recursive || {
+    echo "Failed to fetch submodules"
+}
+
 # make sure we're in the root of the app dir
 cd "$APP_DIR"
+ls
 
 echo "-----> Fetching submodules from $GIT_REPO_URL"
 
