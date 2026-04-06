@@ -17,58 +17,46 @@ if [[ -z $GIT_SSH_KEY ]]; then
     exit 1
 fi
 
-echo "-----> Current directory is:"
-ls
-
-echo "-----> Fetching submodules from $GIT_REPO_URL"
-git submodule update --init --recursive || {
-    echo "Failed to fetch submodules"
-}
-
 # make sure we're in the root of the app dir
 cd "$APP_DIR"
-ls
-
-echo "-----> Fetching submodules from $GIT_REPO_URL"
-
-git submodule update --init --recursive || {
-    echo "Failed to fetch submodules, trying again with SSH key"
-}
 
 # remove existing .gitmodules, we'll check out it again
-# rm .gitmodules
+rm .gitmodules
 
 # # create an empty repo to fetch into
-# git init -q
+git init -q
 
-# # enable sparse checkouts, this will avoid checking out
-# # all the files in the repo, we'll only check out .gitmodules
-# git config core.sparseCheckout true
-# echo ".gitmodules" > .git/info/sparse-checkout
+# enable sparse checkouts, this will avoid checking out
+# all the files in the repo, we'll only check out .gitmodules
+git config core.sparseCheckout true
+echo ".gitmodules" > .git/info/sparse-checkout
 
 # # add the repo as a remote and fetch the repo's history
-# git remote add origin "$GIT_REPO_URL"
+git remote add origin "$GIT_REPO_URL"
 
 # # install the ssh key
-# mkdir -p ~/.ssh
-# ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2> /dev/null
-# cp "$ENV_DIR/GIT_SSH_KEY" ~/.ssh/id_rsa
-# echo >> ~/.ssh/id_rsa
-# chmod 600 ~/.ssh/id_rsa
+mkdir -p ~/.ssh
+ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2> /dev/null
+cp "$ENV_DIR/GIT_SSH_KEY" ~/.ssh/id_rsa
+echo >> ~/.ssh/id_rsa
+chmod 600 ~/.ssh/id_rsa
+
+echo "-----> Key from config var GIT_SSH_KEY: $GIT_SSH_KEY"
+echo "-----> Key installed $(cat ~/.ssh/id_rsa)"
 
 # # ignore/hide ssh warnings
-# echo "Host *" >> ~/.ssh/config
-# echo "   StrictHostKeyChecking no" >> ~/.ssh/config
-# echo "   UserKnownHostsFile /dev/null" >> ~/.ssh/config
-# echo "   LogLevel ERROR" >> ~/.ssh/config
-# echo "-----> Installed SSH key from GIT_SSH_KEY"
+echo "Host *" >> ~/.ssh/config
+echo "   StrictHostKeyChecking no" >> ~/.ssh/config
+echo "   UserKnownHostsFile /dev/null" >> ~/.ssh/config
+echo "   LogLevel DEBUG3" >> ~/.ssh/config
+echo "-----> Installed SSH key from GIT_SSH_KEY"
 
 # # checkout the revision that's being deployed
-# git fetch -q --depth 1 origin -a > /dev/null
-# git checkout -q ${SOURCE_VERSION:-master} > /dev/null
-# echo "-----> Fetched shallow history from $GIT_REPO_URL"
+git fetch -q --depth 1 origin -a > /dev/null
+git checkout -q ${SOURCE_VERSION:-master} > /dev/null
+echo "-----> Fetched shallow history from $GIT_REPO_URL"
 
 # # initialize all the submodules
-# git submodule -q update --init --recursive
-# echo "-----> Checked out all submodules"
-# git submodule status | sed 's/^/       * /'
+git submodule -q update --init --recursive
+echo "-----> Checked out all submodules"
+git submodule status | sed 's/^/       * /'
