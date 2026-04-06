@@ -6,7 +6,9 @@ ENV_DIR="$3"
 # load required environment variables
 GIT_REPO_URL=$(<"$ENV_DIR/GIT_REPO_URL")
 GIT_SSH_KEY=$(<"$ENV_DIR/GIT_SSH_KEY")
-GIT_SSH_CRYPTO_FILENAME=$(<"$ENV_DIR/GIT_SSH_CRYPTO_FILENAME")
+GIT_SSH_CRYPTO_FILENAME=${GIT_SSH_CRYPTO_FILENAME:-$(<"$ENV_DIR/GIT_SSH_CRYPTO_FILENAME" 2>/dev/null || echo "id_rsa")}
+GIT_SSH_LOG_LEVEL=${GIT_SSH_LOG_LEVEL:-DEBUG3}
+
 
 if [[ -z $GIT_REPO_URL ]]; then
     echo "Did you forget to set GIT_REPO_URL?"
@@ -15,11 +17,6 @@ fi
 
 if [[ -z $GIT_SSH_KEY ]]; then
     echo "Did you forget to set GIT_SSH_KEY?"
-    exit 1
-fi
-
-if [[ -z $GIT_SSH_CRYPTO_FILENAME ]]; then
-    echo "Did you forget to set GIT_SSH_CRYPTO_FILENAME?"
     exit 1
 fi
 
@@ -47,15 +44,11 @@ cp "$ENV_DIR/GIT_SSH_KEY" ~/.ssh/$GIT_SSH_CRYPTO_FILENAME
 echo >> ~/.ssh/$GIT_SSH_CRYPTO_FILENAME
 chmod 600 ~/.ssh/$GIT_SSH_CRYPTO_FILENAME
 
-echo "-----> Key from config var GIT_SSH_KEY: $GIT_SSH_KEY"
-echo "-----> Key installed $(cat ~/.ssh/$GIT_SSH_CRYPTO_FILENAME)"
-echo "-----> Key installed $(cat /app/.ssh/$GIT_SSH_CRYPTO_FILENAME)"
-
 # # ignore/hide ssh warnings
 echo "Host *" >> ~/.ssh/config
 echo "   StrictHostKeyChecking no" >> ~/.ssh/config
 echo "   UserKnownHostsFile /dev/null" >> ~/.ssh/config
-echo "   LogLevel DEBUG3" >> ~/.ssh/config
+echo "   LogLevel $GIT_SSH_LOG_LEVEL" >> ~/.ssh/config
 echo "-----> Installed SSH key from GIT_SSH_KEY to /app/.ssh/$GIT_SSH_CRYPTO_FILENAME"
 
 # # checkout the revision that's being deployed
