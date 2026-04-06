@@ -3,6 +3,7 @@
 app_dir="$1"
 
 if [ ! -f "$app_dir/.gitmodules" ]; then
+    echo "No .gitmodules file found, skipping git submodules"
     exit 1
 fi
 
