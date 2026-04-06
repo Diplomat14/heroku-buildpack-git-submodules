@@ -56,7 +56,26 @@ git fetch --depth 1 origin -a > /dev/null
 git checkout ${SOURCE_VERSION:-master} > /dev/null
 echo "-----> Fetched shallow history from $GIT_REPO_URL"
 
+echo "-----> Files in the folder:"
+ls -la
+
+# Replacing .gitmodules from the repo from any to https paths
+SUBMODULES=$(git config --file .gitmodules --get-regexp path | awk '{ print $2 }')
+for SUBMODULE in $SUBMODULES; do
+    URL=$(git config --file .gitmodules --get-regexp "submodule.$SUBMODULE.url" | awk '{ print $2 }')
+    if [[ $URL == git@* ]]; then
+        HTTPS_URL=$(echo "$URL" | sed -E 's/git@(.*):(.*)\/(.*).git/https:\/\/\1\/\2\/\3.git/')
+        git config --file .gitmodules "submodule.$SUBMODULE.url" "$HTTPS_URL"
+        echo "-----> Replaced submodule URL for $SUBMODULE from $URL to $HTTPS_URL"
+    fi
+done
+
+echo "-----> Updated .gitmodules file:"
+cat .gitmodules
+
+
 # # initialize all the submodules
+echo "-----> Fetching submodules"
 git submodule update --init --recursive
 echo "-----> Checked out all submodules"
 git submodule status | sed 's/^/       * /'
