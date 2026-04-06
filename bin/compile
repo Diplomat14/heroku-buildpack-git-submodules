@@ -6,18 +6,34 @@ ENV_DIR="$3"
 # load required environment variables
 GIT_REPO_URL=$(<"$ENV_DIR/GIT_REPO_URL")
 GIT_SSH_KEY=$(<"$ENV_DIR/GIT_SSH_KEY")
-GIT_SSH_CRYPTO_FILENAME=$(<"$ENV_DIR/GIT_SSH_CRYPTO_FILENAME" 2>/dev/null || echo "id_rsa")
-GIT_SSH_LOG_LEVEL=$(<"$ENV_DIR/GIT_SSH_LOG_LEVEL" 2>/dev/null || echo "ERROR")
 
 
 if [[ -z $GIT_REPO_URL ]]; then
     echo "Did you forget to set GIT_REPO_URL?"
     exit 1
+else
+    echo "GIT_REPO_URL is set to $GIT_REPO_URL"
 fi
 
 if [[ -z $GIT_SSH_KEY ]]; then
     echo "Did you forget to set GIT_SSH_KEY?"
     exit 1
+else
+    echo "GIT_SSH_KEY is set. Make sure that line breaks are valid and new line is at the end"
+fi
+
+if [ -f "$ENV_DIR/GIT_SSH_CRYPTO_FILENAME" ]; then
+    GIT_SSH_CRYPTO_FILENAME =$(<"$ENV_DIR/GIT_SSH_CRYPTO_FILENAME")
+else
+    echo "GIT_SSH_CRYPTO_FILENAME not set, defaulting to id_rsa"
+    GIT_SSH_CRYPTO_FILENAME="id_rsa"
+fi
+
+if [ -f "$ENV_DIR/GIT_SSH_LOG_LEVEL" ]; then
+    GIT_SSH_LOG_LEVEL=$(<"$ENV_DIR/GIT_SSH_LOG_LEVEL")
+else
+    echo "GIT_SSH_LOG_LEVEL not set, defaulting to ERROR"
+    GIT_SSH_LOG_LEVEL="ERROR"
 fi
 
 # make sure we're in the root of the app dir
@@ -74,7 +90,6 @@ git checkout ${SOURCE_VERSION:-master} > /dev/null
 echo "-----> Fetched shallow history from $GIT_REPO_URL"
 
 echo "-----> Files in the folder:"
-ls -la
 
 # Converting submodule URLs to SSH and ensuring .git suffix
 SUBMODULES=$(git config --file .gitmodules --get-regexp path | awk '{ print $2 }')
