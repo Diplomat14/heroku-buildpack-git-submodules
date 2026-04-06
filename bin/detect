@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 app_dir="$1"
 
