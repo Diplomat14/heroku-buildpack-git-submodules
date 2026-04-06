@@ -23,7 +23,7 @@ else
 fi
 
 if [ -f "$ENV_DIR/GIT_SSH_CRYPTO_FILENAME" ]; then
-    GIT_SSH_CRYPTO_FILENAME =$(<"$ENV_DIR/GIT_SSH_CRYPTO_FILENAME")
+    GIT_SSH_CRYPTO_FILENAME=$(<"$ENV_DIR/GIT_SSH_CRYPTO_FILENAME")
 else
     echo "GIT_SSH_CRYPTO_FILENAME not set, defaulting to id_rsa"
     GIT_SSH_CRYPTO_FILENAME="id_rsa"
