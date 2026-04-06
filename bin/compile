@@ -6,8 +6,8 @@ ENV_DIR="$3"
 # load required environment variables
 GIT_REPO_URL=$(<"$ENV_DIR/GIT_REPO_URL")
 GIT_SSH_KEY=$(<"$ENV_DIR/GIT_SSH_KEY")
-GIT_SSH_CRYPTO_FILENAME=${GIT_SSH_CRYPTO_FILENAME:-"id_rsa"}
-GIT_SSH_LOG_LEVEL=${GIT_SSH_LOG_LEVEL:-DEBUG3}
+GIT_SSH_CRYPTO_FILENAME=$(<"$ENV_DIR/GIT_SSH_CRYPTO_FILENAME" 2>/dev/null || echo "id_rsa")
+GIT_SSH_LOG_LEVEL=$(<"$ENV_DIR/GIT_SSH_LOG_LEVEL" 2>/dev/null || echo "ERROR")
 
 
 if [[ -z $GIT_REPO_URL ]]; then
