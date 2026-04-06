@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo "Checking for .gitmodules file to determine if git submodules should be fetched..."
+
 if [ -f "$1/.gitmodules" ]; then
     echo "Git submodules found. Running compile script to fetch submodules..."
     exit 0
