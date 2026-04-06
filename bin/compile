@@ -6,7 +6,7 @@ ENV_DIR="$3"
 # load required environment variables
 GIT_REPO_URL=$(<"$ENV_DIR/GIT_REPO_URL")
 GIT_SSH_KEY=$(<"$ENV_DIR/GIT_SSH_KEY")
-GIT_SSH_CRYPTO_FILENAME=${GIT_SSH_CRYPTO_FILENAME:-$(<"$ENV_DIR/GIT_SSH_CRYPTO_FILENAME" 2>/dev/null || echo "id_rsa")}
+GIT_SSH_CRYPTO_FILENAME=${GIT_SSH_CRYPTO_FILENAME:-"id_rsa"}
 GIT_SSH_LOG_LEVEL=${GIT_SSH_LOG_LEVEL:-DEBUG3}
 
 
@@ -52,11 +52,11 @@ echo "   LogLevel $GIT_SSH_LOG_LEVEL" >> ~/.ssh/config
 echo "-----> Installed SSH key from GIT_SSH_KEY to /app/.ssh/$GIT_SSH_CRYPTO_FILENAME"
 
 # # checkout the revision that's being deployed
-git fetch -q --depth 1 origin -a > /dev/null
-git checkout -q ${SOURCE_VERSION:-master} > /dev/null
+git fetch --depth 1 origin -a > /dev/null
+git checkout ${SOURCE_VERSION:-master} > /dev/null
 echo "-----> Fetched shallow history from $GIT_REPO_URL"
 
 # # initialize all the submodules
-git submodule -q update --init --recursive
+git submodule update --init --recursive
 echo "-----> Checked out all submodules"
 git submodule status | sed 's/^/       * /'
