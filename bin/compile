@@ -34,8 +34,25 @@ git init -q
 git config core.sparseCheckout true
 echo ".gitmodules" > .git/info/sparse-checkout
 
+# Function to convert HTTPS to SSH and ensure .git suffix
+convert_url_to_ssh() {
+    local url="$1"
+    # Remove .git if present for normalization
+    url="${url%.git}"
+    # Convert HTTPS to SSH
+    if [[ "$url" =~ ^https://github.com/ ]]; then
+        url="git@github.com:${url#https://github.com/}"
+    fi
+    # Ensure .git suffix
+    if [[ ! "$url" =~ \.git$ ]]; then
+        url="${url}.git"
+    fi
+    echo "$url"
+}
+
 # # add the repo as a remote and fetch the repo's history
-git remote add origin "$GIT_REPO_URL"
+GIT_REMOTE_URL=$(convert_url_to_ssh "$GIT_REPO_URL")
+git remote add origin "$GIT_REMOTE_URL"
 
 # # install the ssh key
 mkdir -p ~/.ssh
@@ -59,14 +76,14 @@ echo "-----> Fetched shallow history from $GIT_REPO_URL"
 echo "-----> Files in the folder:"
 ls -la
 
-# Replacing .gitmodules from the repo from any to https paths
+# Converting submodule URLs to SSH and ensuring .git suffix
 SUBMODULES=$(git config --file .gitmodules --get-regexp path | awk '{ print $2 }')
 for SUBMODULE in $SUBMODULES; do
     URL=$(git config --file .gitmodules --get-regexp "submodule.$SUBMODULE.url" | awk '{ print $2 }')
-    if [[ $URL == git@* ]]; then
-        HTTPS_URL=$(echo "$URL" | sed -E 's/git@(.*):(.*)\/(.*).git/https:\/\/\1\/\2\/\3.git/')
-        git config --file .gitmodules "submodule.$SUBMODULE.url" "$HTTPS_URL"
-        echo "-----> Replaced submodule URL for $SUBMODULE from $URL to $HTTPS_URL"
+    SSH_URL=$(convert_url_to_ssh "$URL")
+    if [[ "$URL" != "$SSH_URL" ]]; then
+        git config --file .gitmodules "submodule.$SUBMODULE.url" "$SSH_URL"
+        echo "-----> Converted submodule URL for $SUBMODULE from $URL to $SSH_URL"
     fi
 done
 
